@@ -1,0 +1,85 @@
+services:
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-password}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-ai_prism}
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$${MYSQL_ROOT_PASSWORD} --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  mongo:
+    image: mongo:7
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+    depends_on:
+      mysql:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      GIN_MODE: release
+      MYSQL_DSN: ${MYSQL_DSN:-root:password@tcp(mysql:3306)/ai_prism?charset=utf8mb4&parseTime=True&loc=Local}
+      MONGO_URI: ${MONGO_URI:-mongodb://mongo:27017}
+      MONGO_DATABASE: ${MONGO_DATABASE:-ai_prism}
+      REDIS_ADDR: ${REDIS_ADDR:-redis:6379}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      AI_PROVIDER: ${AI_PROVIDER:-ollama}
+      AI_BASE_URL: ${AI_BASE_URL:-http://host.docker.internal:11434}
+      AI_MODEL: ${AI_MODEL:-gpt-oss:120b}
+      AI_API_KEY: ${AI_API_KEY:-}
+      MINERU_ENABLED: ${MINERU_ENABLED:-false}
+      MINERU_BASE_URL: ${MINERU_BASE_URL:-https://mineru.net}
+      MINERU_API_KEY: ${MINERU_API_KEY:-}
+      XUNFEI_APP_ID: ${XUNFEI_APP_ID:-}
+      XUNFEI_API_KEY: ${XUNFEI_API_KEY:-}
+      XUNFEI_API_SECRET: ${XUNFEI_API_SECRET:-}
+      XUNFEI_ASR_ENABLED: ${XUNFEI_ASR_ENABLED:-false}
+      XUNFEI_TTS_ENABLED: ${XUNFEI_TTS_ENABLED:-false}
+      EINO_DEV_ENABLED: ${EINO_DEV_ENABLED:-false}
+    ports:
+      - "${BACKEND_PORT:-8080}:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_BASE_URL: /api
+        VITE_WS_BASE_URL: ""
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "${FRONTEND_PORT:-5173}:80"
+
+volumes:
+  mysql-data:
+  mongo-data:
+  redis-data:

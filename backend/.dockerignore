@@ -1,0 +1,9 @@
+.git
+.idea
+.vscode
+bin
+tmp
+uploads
+*.log
+*.tmp
+*.bak

@@ -1,0 +1,11 @@
+.git
+.idea
+.vscode
+node_modules
+dist
+build
+.vite
+coverage
+*.log
+*.tmp
+*.bak

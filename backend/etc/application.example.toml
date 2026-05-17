@@ -1,0 +1,92 @@
+﻿[app]
+name = "ai-prism"
+description = "AI Prism learning coach and personal knowledge base backend"
+key = "dev-key"
+encrypt_key = "change-me-in-local"
+
+[http]
+host = "127.0.0.1"
+port = 8080
+path_prefix = "api"
+
+[gin_webframework]
+mode = "debug"
+recovery = true
+trace = false
+
+[log]
+level = "debug"
+
+[trace]
+enable = false
+
+[ai]
+provider = "ollama"
+base_url = "http://127.0.0.1:11434"
+model = "gpt-oss:120b"
+api_key = ""
+temperature = 0.2
+
+[ai_singleflight]
+enabled = true
+mode = "hybrid"
+distributed_enabled = true
+running_ttl_millis = 15000
+takeover_detect_millis = 10000
+result_ttl_millis = 600000
+failed_result_ttl_millis = 60000
+follower_max_wait_millis = 20000
+poll_fallback_interval_millis = 2000
+heartbeat_interval_millis = 3000
+l1_cache_enabled = true
+l1_cache_max_size = 1000
+l1_cache_ttl_millis = 30000
+compression_codec = "gzip"
+compression_threshold_bytes = 4096
+
+[mineru]
+enabled = false
+base_url = "https://mineru.net"
+api_key = ""
+parse_endpoint = "/api/v1/pdf/parse"
+timeout_seconds = 120
+
+[xunfei]
+app_id = ""
+api_key = ""
+api_secret = ""
+
+asr_enabled = true
+asr_ws_url = "wss://iat-api.xfyun.cn/v2/iat"
+
+tts_enabled = true
+tts_ws_url = "wss://tts-api.xfyun.cn/v2/tts"
+
+[eino_dev]
+enabled = true
+ip = "127.0.0.1"
+port = "52538"
+
+[mysql]
+dsn = "root:password@tcp(127.0.0.1:3306)/ai_prism?charset=utf8mb4&parseTime=True&loc=Local"
+
+[mongo]
+uri = "mongodb://127.0.0.1:27017"
+database = "ai_prism"
+
+[redis]
+addr = "127.0.0.1:6379"
+password = ""
+db = 0
+
+[bloom]
+user_register_enabled = true
+user_register_key = "dev-key"
+user_register_expected_items = 100000000
+user_register_false_positive = 0.001
+user_register_bootstrap_scan = true
+
+[vector_db]
+provider = ""
+postgres_dsn = "root:password@tcp(127.0.0.1:3306)/ai_prism?charset=utf8mb4&parseTime=True&loc=Local"
+
