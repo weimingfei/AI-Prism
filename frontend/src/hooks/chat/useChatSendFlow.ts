@@ -9,6 +9,7 @@ import {
   getConversationsQueryKey,
 } from "@/hooks/useConversations";
 import { CHAT_ROLES, ROUTES } from "@/lib/constants";
+import { localizeErrorMessage } from "@/lib/errors";
 import { CHAT_MESSAGE_STATUS, type ChatMessage } from "@/lib/chat";
 import {
   createTextStreamLimiter,
@@ -197,7 +198,12 @@ export function useChatSendFlow({
           failAssistantMessage({
             id: outbound.assistantMessageId,
             errorMessage:
-              error instanceof Error ? error.message : CHAT_STREAM_ERROR_TEXT,
+              error instanceof Error
+                ? (localizeErrorMessage(
+                    error.message,
+                    CHAT_STREAM_ERROR_TEXT,
+                  ) ?? CHAT_STREAM_ERROR_TEXT)
+                : CHAT_STREAM_ERROR_TEXT,
           }),
         );
       } finally {
@@ -260,9 +266,7 @@ export function useChatSendFlow({
           });
 
           if (!response?.sessionId) {
-            throw new Error(
-              "Failed to create conversation: invalid response data",
-            );
+            throw new Error("创建会话失败：返回数据不完整");
           }
 
           activeSessionId = response.sessionId;
@@ -309,7 +313,12 @@ export function useChatSendFlow({
           failAssistantMessage({
             id: assistantMessage.id,
             errorMessage:
-              error instanceof Error ? error.message : CHAT_STREAM_ERROR_TEXT,
+              error instanceof Error
+                ? (localizeErrorMessage(
+                    error.message,
+                    CHAT_STREAM_ERROR_TEXT,
+                  ) ?? CHAT_STREAM_ERROR_TEXT)
+                : CHAT_STREAM_ERROR_TEXT,
           }),
         );
       }

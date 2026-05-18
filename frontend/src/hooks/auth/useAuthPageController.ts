@@ -20,6 +20,7 @@ const initialFormData: AuthFormData = {
 };
 
 type AuthRedirectState = {
+  forceAuth?: boolean;
   from?: {
     pathname?: string;
     search?: string;
@@ -66,18 +67,19 @@ export function useAuthPageController() {
   const { loading, error, isAuthenticated } = useAppSelector(
     (state) => state.user,
   );
+  const redirectState = location.state as AuthRedirectState | null;
+  const redirectPath =
+    normalizeInAppRedirect(redirectState?.from) ?? ROUTES.home;
+  const shouldForceAuth = redirectState?.forceAuth === true;
 
   useEffect(() => {
-    if (isAuthenticated) {
-      const redirectState = location.state as AuthRedirectState | null;
-      const redirectPath =
-        normalizeInAppRedirect(redirectState?.from) ?? ROUTES.home;
+    if (isAuthenticated && !shouldForceAuth) {
       navigate(redirectPath, { replace: true });
     }
     return () => {
       dispatch(clearError());
     };
-  }, [isAuthenticated, location.state, navigate, dispatch]);
+  }, [dispatch, isAuthenticated, navigate, redirectPath, shouldForceAuth]);
 
   const switchMode = (nextMode: AuthMode) => {
     setMode(nextMode);
@@ -101,9 +103,17 @@ export function useAuthPageController() {
     }
 
     if (mode === "login") {
-      dispatch(
+      const action = dispatch(
         loginUser({ username: formData.username, password: formData.password }),
       );
+      if (shouldForceAuth) {
+        try {
+          await action.unwrap();
+          navigate(redirectPath, { replace: true });
+        } catch {
+          // 登录失败时错误已由 userSlice 写入页面状态。
+        }
+      }
       return;
     }
 

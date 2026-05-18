@@ -16,8 +16,7 @@ import { useMicrophonePcmStream } from "@/hooks/audio/useMicrophonePcmStream";
 import type { UserRespDTO } from "@/types/auth";
 
 const AUDIO_SAMPLE_RATE = 16000;
-const START_RECORDING_ERROR =
-  "无法访问麦克风或连接语音转写服务";
+const START_RECORDING_ERROR = "无法访问麦克风或连接语音转写服务";
 const MICROPHONE_PERMISSION_ERROR =
   "麦克风权限被系统或浏览器拒绝。请在 Chrome 地址栏左侧权限图标和 Windows 设置中允许麦克风访问。";
 
@@ -130,7 +129,7 @@ export function useAudioTranscriptionController(
 
   const startRecording = useCallback(async () => {
     if (!currentUser) {
-      setError("User is not logged in");
+      setError("用户未登录，请先登录");
       return;
     }
 

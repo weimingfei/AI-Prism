@@ -42,7 +42,7 @@ var signatures = []signature{
 		kind:        KindPDF,
 		contentType: "application/pdf",
 		extension:   ".pdf",
-		maxSize:     20 * 1024 * 1024,
+		maxSize:     100 * 1024 * 1024,
 		prefixes:    [][]byte{[]byte("%PDF-")},
 	},
 	{

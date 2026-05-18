@@ -8,7 +8,7 @@ const AUDIO_READY_TIMEOUT_MS = 3_000;
 const AUDIO_PLAY_TIMEOUT_MS = 3_000;
 const AUDIO_UNLOCK_TIMEOUT_MS = 1_000;
 
-const withTimeout = async <T,>(
+const withTimeout = async <T>(
   promise: Promise<T>,
   timeoutMs: number,
   message: string,
@@ -109,7 +109,7 @@ export function useChatTtsAudioElement({
     return new Promise<void>((resolve, reject) => {
       const timeoutId = window.setTimeout(() => {
         cleanup();
-        reject(new Error("Audio element timed out while loading synthesized media"));
+        reject(new Error("合成音频加载超时，请稍后重试"));
       }, AUDIO_READY_TIMEOUT_MS);
 
       const handleCanPlay = () => {
@@ -119,7 +119,7 @@ export function useChatTtsAudioElement({
 
       const handleError = () => {
         cleanup();
-        reject(new Error("Audio element failed to load synthesized media"));
+        reject(new Error("合成音频加载失败，请稍后重试"));
       };
 
       const cleanup = () => {

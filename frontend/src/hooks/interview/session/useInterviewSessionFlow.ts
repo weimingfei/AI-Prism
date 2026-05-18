@@ -39,7 +39,7 @@ export function useInterviewSessionFlow(user: InterviewFlowUser) {
     clearStoredSession,
   } = useInterviewSessionStorage(user);
   const routeSessionId = params.sessionId?.trim() || null;
-  const interviewerSessionId = routeSessionId;
+  const interviewerSessionId = routeSessionId || storedInterviewerSessionId;
 
   const {
     currentQuestionNumber,
@@ -167,10 +167,15 @@ export function useInterviewSessionFlow(user: InterviewFlowUser) {
         currentFollowUpCount: 0,
         isInterviewFinished: true,
       });
-      appendSystemMessage("所有知识点已处理完成，学习记录将自动保存。点击“结束学习”查看最终结果。");
+      appendSystemMessage(
+        "所有知识点已处理完成，学习记录将自动保存。点击“结束学习”查看最终结果。",
+      );
     };
 
-    window.addEventListener("ai-prism:learning-finished", handleLearningFinished);
+    window.addEventListener(
+      "ai-prism:learning-finished",
+      handleLearningFinished,
+    );
     return () => {
       window.removeEventListener(
         "ai-prism:learning-finished",
@@ -211,7 +216,7 @@ export function useInterviewSessionFlow(user: InterviewFlowUser) {
     try {
       const activeSessionId = interviewerSessionId;
       if (!activeSessionId) {
-        throw new Error("Please upload and analyze resume first");
+        throw new Error("请先上传并解析学习资料");
       }
 
       const response = await interviewService.answerInterviewQuestion({
@@ -226,7 +231,7 @@ export function useInterviewSessionFlow(user: InterviewFlowUser) {
 
       if (isInterviewResponseFailed(response.isSuccess)) {
         throw new Error(
-          response.errorMessage || "Failed to submit interview answer",
+          response.errorMessage || "提交讲解内容失败，请稍后重试",
         );
       }
 
@@ -268,9 +273,7 @@ export function useInterviewSessionFlow(user: InterviewFlowUser) {
     } catch (error) {
       stopThinkingIndicator();
       const message =
-        error instanceof Error
-          ? error.message
-          : "Failed to submit answer, please retry";
+        error instanceof Error ? error.message : "提交失败，请稍后重试";
       setInterviewError(message);
       appendErrorMessage(message);
     } finally {
@@ -301,7 +304,9 @@ export function useInterviewSessionFlow(user: InterviewFlowUser) {
     }
     try {
       const result =
-        await interviewService.finishCurrentKnowledgePoint(interviewerSessionId);
+        await interviewService.finishCurrentKnowledgePoint(
+          interviewerSessionId,
+        );
       if (result.knowledgeList) {
         window.dispatchEvent(
           new CustomEvent("ai-prism:knowledge-list-updated", {

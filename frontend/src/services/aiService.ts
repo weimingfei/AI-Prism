@@ -230,9 +230,13 @@ export const aiService = {
           response.status < 500 &&
           response.status !== 429
         ) {
-          throw new Error(`Failed to send chat: ${response.statusText}`);
+          throw new Error(
+            `发送消息失败：${response.status || response.statusText}`,
+          );
         }
-        throw new Error(`Server error: ${response.statusText}`);
+        throw new Error(
+          `服务器响应异常：${response.status || response.statusText}`,
+        );
       },
 
       onmessage(msg) {

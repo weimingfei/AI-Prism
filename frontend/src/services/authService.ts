@@ -89,10 +89,10 @@ export const authService = {
 
     const user = extractUserFromAuthPayload(payload);
     if (!user) {
-      throw new Error("Login succeeded but user info is missing");
+      throw new Error("登录成功，但返回的用户信息缺失");
     }
     if (!token) {
-      throw new Error("Login succeeded but token is missing");
+      throw new Error("登录成功，但返回的登录凭证缺失");
     }
     return user;
   },
@@ -112,7 +112,7 @@ export const authService = {
 
     const user = extractUserFromAuthPayload(payload);
     if (!user) {
-      throw new AppError(ErrorCode.UNAUTHORIZED, "User is not logged in");
+      throw new AppError(ErrorCode.UNAUTHORIZED, "用户未登录，请先登录");
     }
     return user;
   },

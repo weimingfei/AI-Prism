@@ -50,7 +50,7 @@ export function useAudioTranscriptionTransport({
 
   const connect = useCallback(() => {
     if (!userId) {
-      throw new Error("Audio transcription requires a valid user id");
+      throw new Error("语音转写需要有效的用户身份，请先登录");
     }
 
     disconnect();

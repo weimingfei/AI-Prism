@@ -66,7 +66,7 @@ export function useMicrophonePcmStream({
           .webkitAudioContext;
 
       if (!AudioContextCtor) {
-        throw new Error("AudioContext is not supported in current browser");
+        throw new Error("当前浏览器不支持音频采集");
       }
 
       const audioContext = new AudioContextCtor({ sampleRate });

@@ -9,6 +9,8 @@ import { resolveAppEnv } from "@/config/env";
 import {
   AppError,
   ErrorCode,
+  ErrorMessages,
+  localizeErrorMessage,
   type ErrorCode as ErrorCodeValue,
 } from "@/lib/errors";
 import { getAuthToken } from "@/lib/authToken";
@@ -114,7 +116,7 @@ export const assertRequestAuthorized = (url: string | undefined) => {
   if (requiresAuthTokenForRequest(url) && !token) {
     throw new AppError(
       ErrorCode.UNAUTHORIZED,
-      "Unauthorized. Please sign in again.",
+      ErrorMessages[ErrorCode.UNAUTHORIZED],
     );
   }
   return token;
@@ -171,7 +173,7 @@ export const unwrapResponseData = <T>(payload: BaseResponse<T> | T): T => {
 
     throw new AppError(
       mapBusinessCode(payload.code),
-      payload.message || "Request failed",
+      localizeErrorMessage(payload.message, "请求失败，请稍后重试。"),
       payload,
     );
   }
@@ -187,7 +189,11 @@ export const unwrapResponse = <T>(
 
 export const mapAxiosErrorToAppError = (error: AxiosError): AppError => {
   if (axios.isCancel(error)) {
-    return new AppError(ErrorCode.ABORTED, "Request was cancelled", error);
+    return new AppError(
+      ErrorCode.ABORTED,
+      ErrorMessages[ErrorCode.ABORTED],
+      error,
+    );
   }
 
   if (error.response) {
@@ -201,57 +207,109 @@ export const mapAxiosErrorToAppError = (error: AxiosError): AppError => {
       case 400:
         return new AppError(
           ErrorCode.INVALID_PARAMS,
-          responseMessage || "Invalid request parameters",
+          localizeErrorMessage(
+            responseMessage,
+            "请求参数不正确，请检查后重试。",
+          ),
           error,
         );
       case 401:
         return new AppError(
           ErrorCode.UNAUTHORIZED,
-          responseMessage || "Unauthorized. Please sign in again.",
+          localizeErrorMessage(
+            responseMessage,
+            ErrorMessages[ErrorCode.UNAUTHORIZED],
+          ),
           error,
         );
       case 403:
         return new AppError(
           ErrorCode.FORBIDDEN,
-          responseMessage || "Permission denied",
+          localizeErrorMessage(
+            responseMessage,
+            ErrorMessages[ErrorCode.FORBIDDEN],
+          ),
           error,
         );
       case 404:
         return new AppError(
           ErrorCode.RESOURCE_NOT_FOUND,
-          responseMessage || "Requested resource not found",
+          localizeErrorMessage(
+            responseMessage,
+            ErrorMessages[ErrorCode.RESOURCE_NOT_FOUND],
+          ),
+          error,
+        );
+      case 408:
+        return new AppError(
+          ErrorCode.REQUEST_TIMEOUT,
+          localizeErrorMessage(
+            responseMessage,
+            ErrorMessages[ErrorCode.REQUEST_TIMEOUT],
+          ),
+          error,
+        );
+      case 413:
+        return new AppError(
+          ErrorCode.FILE_UPLOAD_ERROR,
+          localizeErrorMessage(
+            responseMessage,
+            "上传内容过大，请压缩文件或联系管理员调整上传限制。",
+          ),
+          error,
+        );
+      case 415:
+        return new AppError(
+          ErrorCode.INVALID_PARAMS,
+          localizeErrorMessage(
+            responseMessage,
+            "上传格式不支持，请更换文件后重试。",
+          ),
+          error,
+        );
+      case 429:
+        return new AppError(
+          ErrorCode.OPERATION_FAILED,
+          localizeErrorMessage(responseMessage, "请求过于频繁，请稍后再试。"),
           error,
         );
       case 500:
         return new AppError(
           ErrorCode.UNKNOWN_ERROR,
-          responseMessage || "Internal server error",
+          localizeErrorMessage(responseMessage, "服务器内部错误，请稍后重试。"),
           error,
         );
       default:
         return new AppError(
           ErrorCode.UNKNOWN_ERROR,
-          `Request failed with status ${error.response.status}`,
+          localizeErrorMessage(
+            responseMessage,
+            `请求失败，服务器返回状态码 ${error.response.status}。`,
+          ),
           error,
         );
     }
   }
 
   if (error.code === "ECONNABORTED") {
-    return new AppError(ErrorCode.REQUEST_TIMEOUT, "Request timeout", error);
+    return new AppError(
+      ErrorCode.REQUEST_TIMEOUT,
+      ErrorMessages[ErrorCode.REQUEST_TIMEOUT],
+      error,
+    );
   }
 
   if (typeof window !== "undefined" && !window.navigator.onLine) {
     return new AppError(
       ErrorCode.NETWORK_ERROR,
-      "Network disconnected. Please check your connection.",
+      "网络已断开，请检查网络连接。",
       error,
     );
   }
 
   return new AppError(
     ErrorCode.NETWORK_ERROR,
-    error.message || "Network request failed",
+    localizeErrorMessage(error.message, ErrorMessages[ErrorCode.NETWORK_ERROR]),
     error,
   );
 };
@@ -471,7 +529,7 @@ const withInflightDedup = <T, D>(args: {
     if (args.dedupe === "reject") {
       throw new AppError(
         ErrorCode.OPERATION_FAILED,
-        "Duplicate request is in progress, please retry later.",
+        "已有相同请求正在处理中，请稍后重试。",
       );
     }
     if (args.dedupe === "cancel-previous") {
@@ -539,7 +597,11 @@ axiosInstance.interceptors.request.use(
   },
   (error) =>
     Promise.reject(
-      new AppError(ErrorCode.UNKNOWN_ERROR, "Failed to send request", error),
+      new AppError(
+        ErrorCode.UNKNOWN_ERROR,
+        "请求发送失败，请稍后重试。",
+        error,
+      ),
     ),
 );
 

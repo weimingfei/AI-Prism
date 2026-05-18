@@ -10,13 +10,19 @@ export function useChatTtsAudioCache() {
     return message.tts?.cacheKey?.trim() || message.id;
   }, []);
 
-  const getCachedObjectUrl = useCallback((message: ChatMessage) => {
-    return preparedObjectUrlMapRef.current.get(getPreparedAudioKey(message));
-  }, [getPreparedAudioKey]);
+  const getCachedObjectUrl = useCallback(
+    (message: ChatMessage) => {
+      return preparedObjectUrlMapRef.current.get(getPreparedAudioKey(message));
+    },
+    [getPreparedAudioKey],
+  );
 
   const cacheObjectUrl = useCallback(
     (message: ChatMessage, objectUrl: string) => {
-      preparedObjectUrlMapRef.current.set(getPreparedAudioKey(message), objectUrl);
+      preparedObjectUrlMapRef.current.set(
+        getPreparedAudioKey(message),
+        objectUrl,
+      );
     },
     [getPreparedAudioKey],
   );
@@ -55,7 +61,7 @@ export function useChatTtsAudioCache() {
 
       const remoteUrl = task.audioUrl?.trim();
       if (!remoteUrl) {
-        throw new Error("TTS task completed without audio payload");
+        throw new Error("语音合成完成，但没有返回音频内容");
       }
 
       const response = await fetch(remoteUrl, {
@@ -65,9 +71,7 @@ export function useChatTtsAudioCache() {
       });
 
       if (!response.ok) {
-        throw new Error(
-          `Failed to download synthesized audio: ${response.status}`,
-        );
+        throw new Error(`下载合成音频失败：${response.status}`);
       }
 
       const contentType = response.headers.get("Content-Type")?.trim();

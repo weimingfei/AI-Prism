@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
@@ -24,6 +25,14 @@ export default function InterviewResumePdfDocument({
   onLoadSuccess,
   onLoadError,
 }: InterviewResumePdfDocumentProps) {
+  const [pdfLoadError, setPdfLoadError] = useState<string | null>(null);
+
+  const reportLoadError = (error: unknown, fallback: string) => {
+    const message = error instanceof Error ? error.message : fallback;
+    setPdfLoadError(message);
+    onLoadError(message);
+  };
+
   return (
     <Document
       file={resumePreviewSource}
@@ -40,6 +49,11 @@ export default function InterviewResumePdfDocument({
       error={
         <div className="space-y-2 p-6 text-sm text-amber-600">
           <div>PDF 预览失败。</div>
+          {pdfLoadError ? (
+            <div className="max-w-xl break-words text-xs text-amber-700">
+              失败原因：{pdfLoadError}
+            </div>
+          ) : null}
           {resumeOpenPreviewUrl ? (
             <a
               href={resumeOpenPreviewUrl}
@@ -53,17 +67,14 @@ export default function InterviewResumePdfDocument({
         </div>
       }
       onLoadSuccess={(info) => {
+        setPdfLoadError(null);
         onLoadSuccess(info.numPages);
       }}
       onLoadError={(error) => {
-        const message =
-          error instanceof Error ? error.message : "资料预览失败";
-        onLoadError(message);
+        reportLoadError(error, "资料预览失败");
       }}
       onSourceError={(error) => {
-        const message =
-          error instanceof Error ? error.message : "资料文件加载失败";
-        onLoadError(message);
+        reportLoadError(error, "资料文件加载失败");
       }}
     >
       <div className="space-y-4">

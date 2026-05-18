@@ -12,7 +12,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { APP_BRAND_NAME } from "@/lib/branding";
 import { ROUTES } from "@/lib/constants";
-import { useAppSelector } from "@/store/hooks";
 import {
   MARKETING_ADVANTAGES,
   MARKETING_OUTCOMES,
@@ -30,23 +29,18 @@ const ADVANTAGE_ICON_MAP: Record<string, LucideIcon> = {
 
 export default function MarketingHomePage() {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAppSelector((state) => state.user);
   const [heroVideoSrc] = useState(selectMarketingHeroVideoSrc);
 
   const handleStartNow = useCallback(() => {
-    if (isAuthenticated) {
-      navigate(ROUTES.interviewIntro);
-      return;
-    }
-
     navigate(ROUTES.auth, {
       state: {
+        forceAuth: true,
         from: {
           pathname: ROUTES.interviewIntro,
         },
       },
     });
-  }, [isAuthenticated, navigate]);
+  }, [navigate]);
 
   return (
     <div className="h-full w-full overflow-y-auto bg-slate-50">

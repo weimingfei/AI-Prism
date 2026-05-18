@@ -66,7 +66,9 @@ export const normalizeTaskResult = (
     toTrimmedString(payload.pybufContent) ??
     null;
   const audioUrl =
-    toTrimmedString(payload.audioUrl) ?? toTrimmedString(payload.pybufUrl) ?? null;
+    toTrimmedString(payload.audioUrl) ??
+    toTrimmedString(payload.pybufUrl) ??
+    null;
   const completed =
     typeof payload.completed === "boolean"
       ? payload.completed
@@ -131,11 +133,11 @@ export const xunfeiTtsService = {
     const task = normalizeTaskResult(response);
 
     if (!task.success || !task.completed) {
-      throw toTaskError(task, "TTS synthesis failed");
+      throw toTaskError(task, "语音合成失败，请稍后重试");
     }
 
     if (!task.audioBase64 && !task.audioUrl) {
-      throw toTaskError(task, "TTS synthesis completed without audio content");
+      throw toTaskError(task, "语音合成完成，但没有返回音频内容");
     }
 
     return task;

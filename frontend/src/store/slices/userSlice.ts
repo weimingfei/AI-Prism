@@ -41,7 +41,7 @@ export const loginUser = createAsyncThunk<
     return await authService.login(data);
   } catch (error: unknown) {
     const errorMessage =
-      error instanceof Error ? error.message : "Login failed";
+      error instanceof Error ? error.message : "登录失败，请稍后重试";
     return rejectWithValue(errorMessage);
   }
 });
@@ -56,7 +56,7 @@ export const checkAuthStatus = createAsyncThunk<
   } catch (error: unknown) {
     const appError = AppError.from(error);
     return rejectWithValue({
-      message: appError.message || "Failed to check authentication status",
+      message: appError.message || "登录状态检查失败，请重新登录",
       shouldClearAuth:
         appError.code === ErrorCode.UNAUTHORIZED ||
         appError.code === ErrorCode.FORBIDDEN,
@@ -71,7 +71,7 @@ export const logoutUser = createAsyncThunk<void, void, { rejectValue: string }>(
       await authService.logout();
     } catch (error: unknown) {
       const errorMessage =
-        error instanceof Error ? error.message : "Logout failed";
+        error instanceof Error ? error.message : "退出登录失败，请稍后重试";
       return rejectWithValue(errorMessage);
     }
   },
@@ -100,7 +100,7 @@ export const userSlice = createSlice({
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload ?? "Login failed";
+        state.error = action.payload ?? "登录失败，请稍后重试";
       })
       .addCase(checkAuthStatus.fulfilled, (state, action) => {
         const prevIdentity = getUserIdentityKey(state.currentUser);
@@ -116,8 +116,7 @@ export const userSlice = createSlice({
       })
       .addCase(checkAuthStatus.rejected, (state, action) => {
         state.loading = false;
-        state.error =
-          action.payload?.message ?? "Failed to check authentication status";
+        state.error = action.payload?.message ?? "登录状态检查失败，请重新登录";
 
         if (!action.payload?.shouldClearAuth) {
           return;
@@ -139,7 +138,7 @@ export const userSlice = createSlice({
       })
       .addCase(logoutUser.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload ?? "Logout failed";
+        state.error = action.payload ?? "退出登录失败，请稍后重试";
       });
   },
 });

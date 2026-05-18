@@ -90,8 +90,7 @@ export const resolveAudioTranscriptionEvent = (
     case "error":
       return {
         kind: "error",
-        message:
-          normalizeText(message.message) || text || "Transcription error",
+        message: normalizeText(message.message) || text || "语音转写失败",
       };
     default:
       return {
