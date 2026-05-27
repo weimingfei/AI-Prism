@@ -11,6 +11,10 @@ AI Prism 是一套 AI 学习教练与个人知识库系统，面向资料学习�
 - 语音相关能力接入点
 - Docker Compose 一键部署前端、后端和数据服务
 
+## 演示视频
+
+[![演示视频封面](frontend/public/videos/example_display.jpg)](frontend/public/videos/example_display.mp4)
+
 ## 技术栈
 
 - 前端：React、TypeScript、Vite、Tailwind CSS、TanStack Query
