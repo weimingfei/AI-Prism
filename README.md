@@ -15,8 +15,6 @@ AI Prism 是一套 AI 学习教练与个人知识库系统，面向资料学习�
 
 https://github.com/weimingfei/AI-Prism/releases/download/v1.0/example_display.mp4
 
-[![演示视频封面](frontend/public/videos/example_display.jpg)](https://github.com/weimingfei/AI-Prism/releases/download/v1.0/example_display.mp4)
-
 ## 技术栈
 
 - 前端：React、TypeScript、Vite、Tailwind CSS、TanStack Query
